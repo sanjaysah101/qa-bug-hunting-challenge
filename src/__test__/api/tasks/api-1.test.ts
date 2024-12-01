@@ -1,4 +1,4 @@
-import { runTest } from "@/utils/test-runner";
+import { runTest } from "@/utils";
 
 describe("API-1: User Status Check", () => {
   const TASK_ID = "api-1";

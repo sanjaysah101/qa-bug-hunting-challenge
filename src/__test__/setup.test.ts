@@ -1,5 +1,4 @@
-import { expectMissingTaskIdResponse, expectUnauthorizedResponse } from "@/utils/test-helpers";
-import { runTest } from "@/utils/test-runner";
+import { expectMissingTaskIdResponse, expectUnauthorizedResponse, runTest } from "@/utils";
 
 describe("Initial Setup Test", () => {
   const TASK_ID = "api-2";

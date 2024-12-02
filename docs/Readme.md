@@ -1,5 +1,6 @@
 # API Test Results
 
+- [API-02](./api-02.md)
 - [API-03](./api-03.md)
 - [API-06](./api-06.md)
 - [API-07](./api-07.md)

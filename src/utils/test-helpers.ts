@@ -35,6 +35,15 @@ export const expectMissingEmailError = (response: AxiosResponse) => {
   });
 };
 
+export const expectMissingEmailErrorForLogin = (response: AxiosResponse) => {
+  expect(response.status).toBe(400);
+  expect(response.data).toMatchObject({
+    code: 400,
+    message:
+      'request body has an error: doesn\'t match schema #/components/schemas/Login: Error at "/email": property "email" is missing',
+  });
+};
+
 export const expectInvalidEmailFormatError = (response: AxiosResponse) => {
   expect(response.status).toBe(400);
   expect(response.data).toMatchObject({
@@ -58,6 +67,15 @@ export const expectMissingPasswordError = (response: AxiosResponse) => {
     code: 400,
     message:
       'request body has an error: doesn\'t match schema #/components/schemas/NewUser: Error at "/password": property "password" is missing',
+  });
+};
+
+export const expectMissingPasswordErrorForLogin = (response: AxiosResponse) => {
+  expect(response.status).toBe(400);
+  expect(response.data).toMatchObject({
+    code: 400,
+    message:
+      'request body has an error: doesn\'t match schema #/components/schemas/Login: Error at "/password": property "password" is missing',
   });
 };
 

@@ -6,8 +6,8 @@ When creating a new user through the `/users` endpoint with task ID `api-22`, th
 
 ## Environment Details
 
-- **Development URL**: https://dev-gs.qa-playground.com/api/v1
-- **Production URL**: https://release-gs.qa-playground.com/api/v1
+- **Development URL**: <https://dev-gs.qa-playground.com/api/v1>
+- **Production URL**: <https://release-gs.qa-playground.com/api/v1>
 - **Task ID**: api-22
 - **Endpoint**: POST /users
 - **HTTP Method**: POST

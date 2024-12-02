@@ -119,10 +119,10 @@ Object {
 
 ```bash
 # Run in development environment to see the bug
-pnpm test:dev
+pnpm test:dev api-03.test
 
 # Run in production environment to verify correct behavior
-pnpm test:prod
+pnpm test:prod api-03.test
 ```
 
 ## Bug Impact

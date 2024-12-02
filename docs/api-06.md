@@ -10,8 +10,8 @@ When retrieving the list of users through the `/users` endpoint with task ID `ap
 
 ## Environment Details
 
-- **Development URL**: https://dev-gs.qa-playground.com/api/v1
-- **Production URL**: https://release-gs.qa-playground.com/api/v1
+- **Development URL**: <https://dev-gs.qa-playground.com/api/v1>
+- **Production URL**: <https://release-gs.qa-playground.com/api/v1>
 - **Task ID**: api-6
 - **Endpoint**: GET /users
 - **HTTP Method**: GET
@@ -39,60 +39,82 @@ All requests require:
 
 ### Actual Behavior (Development)
 
-- Same users are returned regardless of offset
-- Large offset values still return all users
-- Pagination parameters are ignored
+- Same users are returned regardless of offset value
+- Large offset values (e.g., 1000) still return all users
+- Pagination parameters are ignored, returning full dataset
 
 ## Test Implementation
 
-The bug is verified using the following test case:
+The bug is verified using the following test cases:
 
 ```typescript
-it("should return a list of users with meta information", async () => {
-  const { getUsers } = await createTestContext();
-  const response = await getUsers();
+describe("Pagination Tests", () => {
+  it("should return different users when using offset", async () => {
+    const { getUsersWithPagination } = await createTestContext();
+    const limit = 2;
+    // Get first page
+    const firstPage = await getUsersWithPagination(0, limit);
+    // Get second page
+    const secondPage = await getUsersWithPagination(limit, limit);
+    // Verify we got different users
+    const firstPageEmails = firstPage.data.users.map((user) => user.email);
+    const secondPageEmails = secondPage.data.users.map((user) => user.email);
+    // Check for no overlap between pages
+    const hasOverlap = firstPageEmails.some((email) => secondPageEmails.includes(email));
+    expect(hasOverlap).toBe(false);
+  });
 
-  expect(response.status).toBe(200);
-  expect(response.data.meta.total).toBe(response.data.users.length);
-
-  // Validate user object structure
-  if (response.data.users.length > 0) {
-    const [user] = response.data.users;
-    expect(user).toMatchObject({
-      email: expect.any(String),
-      name: expect.any(String),
-      nickname: expect.any(String),
-      avatar_url: expect.any(String),
-      uuid: expect.any(String),
-    });
-  }
+  it("should return empty array when offset exceeds total users", async () => {
+    const { getUsersWithPagination } = await createTestContext();
+    const response = await getUsersWithPagination(1000, 10);
+    expect(response.status).toBe(200);
+    expect(response.data.users).toHaveLength(0);
+  });
 });
 ```
 
 ## Verification Results
 
-- ❌ Test fails in Development environment
-- ❌ Test fails in Production environment
+- ✅ Tests pass in Production environment
+- ❌ Tests fail in Development environment
 - 🔄 Issue is consistently reproducible
 
 ## Test Evidence
 
+### Test Failure 1: Offset Not Respected
+
 ```diff
-Expected: 10
-Received: 11
+Expected: false
+Received: true
 
   expect(received).toBe(expected)
 
-  Expected meta.total to match users array length
-    at Object.<anonymous> (src/__test__/api/tasks/api-6.test.ts:83:40)
+  Expected no overlap between pages, but same users were returned
+    at Object.<anonymous> (src/__test__/api/tasks/api-6.test.ts:91:26)
+```
+
+### Test Failure 2: Large Offset Returns All Users
+
+```diff
+Expected length: 0
+Received length: 10
+Received array: [
+  {
+    "email": "alex@gmail.com",
+    "name": "Alex",
+    ...
+  },
+  // ... 9 more users
+]
 ```
 
 ## Additional Notes
 
-- The API returns a 200 status code, indicating the request was successful
-- All user objects in the array have valid structures
-- The discrepancy is specifically between the meta.total count and actual array length
-- This issue affects data consistency and pagination reliability
+- The API returns a 200 status code in both environments
+- All user objects have valid structures
+- Basic validation (zero limit, negative offset) works correctly
+- The issue specifically affects pagination functionality
+- Total count remains consistent across pages
 
 ## Related Files
 
@@ -104,10 +126,10 @@ Received: 11
 
 ```bash
 # Run in development environment to see the bug
-pnpm test:dev
+pnpm test:dev api-06.test
 
 # Run in production environment to verify behavior
-pnpm test:prod
+pnpm test:prod api-06.test
 ```
 
 ## Bug Impact
@@ -117,12 +139,14 @@ This bug could affect:
 - Frontend pagination implementations
 - Data consistency checks
 - User count displays
-- Any feature relying on accurate user counts
+- API response time due to unnecessary data transfer
+- Mobile app performance due to large response payloads
+- Backend resource utilization
 
 ## Possible Investigation Points
 
-1. User count calculation logic in the API
-2. Pagination implementation
-3. Cache consistency
-4. Database query optimization
-5. Response transformation middleware
+1. Pagination query implementation in development environment
+2. Database query optimization
+3. Middleware that might be modifying the response
+4. Environment-specific configuration differences
+5. Cache layer consistency
